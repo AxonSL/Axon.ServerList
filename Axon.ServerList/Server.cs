@@ -13,7 +13,7 @@ public struct Server
     [JsonProperty("whitelist")] public bool Whitelist;                          //16
     [JsonProperty("accessRestriction")] public bool AccessRestriction;                  //32
 
-    [JsonProperty("firendlyFire")] public bool FriendlyFire;                       //64
+    [JsonProperty("friendlyFire")] public bool FriendlyFire;                       //64
     [JsonProperty("players")] public int Players;                             //128
     [JsonProperty("maxPlayers")] public int MaxPlayers;                          //256
     [JsonProperty("playerList")] public List<string> PlayerList;   //512

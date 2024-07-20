@@ -155,6 +155,13 @@ public class ServerList
                                 var updateBitString = request.QueryString["updatebit"];
                                 if (string.IsNullOrWhiteSpace(updateBitString))
                                 {
+                                    if(CheckForNull(server))
+                                    {
+                                        response.StatusCode = 400;
+                                        response.StatusDescription = "Some required values are null";
+                                        break;
+                                    }
+
                                     ServerEntries.Remove(entry);
                                     ServerEntries.Add(new ServerEntry
                                     {
@@ -174,13 +181,13 @@ public class ServerList
 
                                 entry.LastUpdate = DateTime.Now;
 
-                                if ((updateBit & 1) != 0)
+                                if ((updateBit & 1) != 0 && server.Version != null)
                                     entry.Server.Version = server.Version;
 
-                                if ((updateBit & 2) != 0)
+                                if ((updateBit & 2) != 0 && server.Info != null)
                                     entry.Server.Info = server.Info;
 
-                                if ((updateBit & 4) != 0)
+                                if ((updateBit & 4) != 0 && server.Patsebin != null)
                                     entry.Server.Patsebin = server.Patsebin;
 
                                 if ((updateBit & 8) != 0)
@@ -201,13 +208,20 @@ public class ServerList
                                 if ((updateBit & 256) != 0)
                                     entry.Server.MaxPlayers = server.MaxPlayers;
 
-                                if ((updateBit & 512) != 0)
+                                if ((updateBit & 512) != 0 && server.PlayerList != null)
                                     entry.Server.PlayerList = server.PlayerList;
 
-                                if ((updateBit & 1024) != 0)
+                                if ((updateBit & 1024) != 0 && server.Mods != null)
                                     entry.Server.Mods = server.Mods;
 
                                 response.StatusCode = 200;
+                                break;
+                            }
+
+                            if (CheckForNull(server))
+                            {
+                                response.StatusCode = 400;
+                                response.StatusDescription = "Some required values are null";
                                 break;
                             }
 
@@ -368,6 +382,17 @@ public class ServerList
         }
 
         _ipTracker[clientIp] = now;
+        return false;
+    }
+
+    private static bool CheckForNull(Server server)
+    {
+        if (server.Version == null) return true;
+        if (server.Info == null) return true;
+        if (server.Patsebin == null) return true;
+        if (server.PlayerList == null) return true;
+        if (server.Mods == null) return true;
+        if (server.Ip == null) return true;
         return false;
     }
 
