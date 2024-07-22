@@ -349,6 +349,7 @@ public class ServerList
                                 server.EMail = (string)(requestContent["email"] ?? throw new NullReferenceException())!;
                             }
 
+                            File.WriteAllText(Program.ConfigPath, JsonConvert.SerializeObject(Configuration));
                             response.StatusCode = 200;
                         }
                         catch
