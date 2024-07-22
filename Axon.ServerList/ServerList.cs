@@ -316,6 +316,49 @@ public class ServerList
                         }
                         break;
 
+                    case "PATCH":
+                        try
+                        {
+                            var requestContent = JObject.Parse(requestBody);
+                            if(!requestContent.ContainsKey("identifier"))
+                            {
+                                response.StatusCode = 400;
+                                response.StatusDescription = "You need to send a identifier";
+                                break;
+                            }
+
+                            var iden = (string)(requestContent["identifier"] ?? throw new NullReferenceException())!;
+                            var idenGuid = Guid.Parse(iden);
+
+                            var server = Configuration.VerifiedServers.FirstOrDefault(x => x.Identifier == idenGuid);
+
+                            if(server == null)
+                            {
+                                response.StatusCode = 400;
+                                response.StatusDescription = "No server with that identifier found";
+                                break;
+                            }
+
+                            if(requestContent.ContainsKey("discord"))
+                            {
+                                server.Discord = (string)(requestContent["discord"] ?? throw new NullReferenceException())!;
+                            }
+
+                            if (requestContent.ContainsKey("email"))
+                            {
+                                server.EMail = (string)(requestContent["email"] ?? throw new NullReferenceException())!;
+                            }
+
+                            response.StatusCode = 200;
+                        }
+                        catch
+                        {
+                            response.StatusCode = 400;
+                            response.StatusDescription = "Couldn't deserialize body";
+                            break;
+                        }
+                        break;
+
                     case "DELETE":
                         try
                         {
