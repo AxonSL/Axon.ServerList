@@ -9,7 +9,8 @@
       "launchUrl": "http://localhost:8080/serverlist",
       "environmentVariables": {
         "ADMINTOKEN": "debugToken",
-        "URL": "http://*"
+        "URL": "http://*",
+        "CONFIGPATH": "/data"
       },
       "DockerfileRunArguments": "-p 8080:8080"
     }
