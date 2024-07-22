@@ -20,4 +20,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 EXPOSE 8080
+ENV CONFIGPATH=/data
+VOLUME [ "/data" ]
 ENTRYPOINT ["dotnet", "Axon.ServerList.dll"]

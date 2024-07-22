@@ -15,6 +15,7 @@ public static class Program
     public static void Main(string[] args)
     {
         var dir = Environment.GetEnvironmentVariable("CONFIGPATH") ?? Directory.GetCurrentDirectory();
+        Console.WriteLine("Config Directory: " + dir);
         if(!Directory.Exists(dir))
             Directory.CreateDirectory(dir);
 
