@@ -58,9 +58,10 @@ jobs:
           push-to-registry: true
 
       - name: Trigger Container Upgrade
-        uses: enflo/curl-action@v1.2
+        uses: zzzze/webhook-trigger@master
         with:
-          curl: '-H "Authorization: Bearer ${{ secrets.ADMINTOKEN }}" https://list.axon-sl.org/v1/update'
+          webhook_url: ${{ secrets.UPDATE_URL }}
+          options: "-H \"Authorization: Bearer ${{ secrets.ADMINTOKEN }}\""
           
       
       
