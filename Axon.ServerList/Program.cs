@@ -14,7 +14,7 @@ public static class Program
 
     public static void Main(string[] args)
     {
-        ConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "config.json");
+        ConfigPath = Environment.GetEnvironmentVariable("CONFIGPATH") ?? Path.Combine(Directory.GetCurrentDirectory(), "config.json");
         if (!File.Exists(ConfigPath))
             CreateConfig(ConfigPath);
 
