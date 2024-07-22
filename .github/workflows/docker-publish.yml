@@ -56,4 +56,11 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      - name: Trigger Container Upgrade
+        uses: enflo/curl-action@v1.2
+        with:
+          curl: '-H "Authorization: Bearer ${{ secrets.ADMINTOKEN }}" https://list.axon-sl.org/v1/update'
+          
+      
       
