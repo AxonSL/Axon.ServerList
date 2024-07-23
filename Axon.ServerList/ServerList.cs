@@ -17,6 +17,7 @@ public class ServerList
     private readonly HttpListener _listener = new HttpListener();
     private readonly ConcurrentDictionary<string, DateTime> _ipTracker = new ConcurrentDictionary<string, DateTime>();
     private readonly TimeSpan rateLimit = TimeSpan.FromSeconds(3);
+    private readonly bool checkXForwardedForHeader = false;
 
     public ServerListConfiguration Configuration { get; set; }
     public List<ServerEntry> ServerEntries { get; set; } = new();
@@ -27,6 +28,18 @@ public class ServerList
     {
         _args = args;
         Configuration = configuration;
+        var limitString = Environment.GetEnvironmentVariable("RATELIMIT");
+        if (limitString != null && int.TryParse(limitString,out var limit))
+        {
+            rateLimit = TimeSpan.FromMilliseconds(limit);
+        }
+
+        var checkString = Environment.GetEnvironmentVariable("USEXFORWARDED");
+        if(checkString != null && bool.TryParse(checkString,out var check))
+        {
+            checkXForwardedForHeader = check;
+        }
+
         Start();
     }
 
@@ -61,7 +74,11 @@ public class ServerList
 
     private void CheckList()
     {
-        while(_listener.IsListening)
+        var delay = 180000;
+        var delayEnvString = Environment.GetEnvironmentVariable("CHECKREMOVEDELAY");
+        if(delayEnvString != null && int.TryParse(delayEnvString,out var delayEnv))
+            delay = delayEnv;
+        while (_listener.IsListening)
         {
             foreach(var server in ServerEntries.ToList())
             {
@@ -70,7 +87,13 @@ public class ServerList
                     ServerEntries.Remove(server);
                 }
             }
-            Thread.Sleep(180000);
+            var now = DateTime.UtcNow;
+            foreach (var ipData in _ipTracker.ToList())
+            {
+                if ((now - ipData.Value) < rateLimit)
+                    _ipTracker.Remove(ipData.Key, out _);
+            }
+            Thread.Sleep(delay);
         }
     }
 
@@ -88,6 +111,17 @@ public class ServerList
         var request = context.Request;
         var response = context.Response;
         var ip = request.RemoteEndPoint.Address.ToString();
+
+        if(checkXForwardedForHeader)
+        {
+            var xForwaredForHeader = request.Headers["X-Forwarded-For"];
+            if(xForwaredForHeader != null)
+            {
+                var adresses = xForwaredForHeader.Split(',');
+                ip = adresses[0].Trim();
+            }
+        }
+
         response.ContentEncoding = Encoding.UTF8;
         response.ContentType = "application/json";
         response.StatusCode = 500;
@@ -95,7 +129,7 @@ public class ServerList
         var requestBody = await new StreamReader(request.InputStream, request.ContentEncoding).ReadToEndAsync();
         var responseBody = "{}";
 
-        if (IsRateLimited(context.Request.RemoteEndPoint.Address.ToString()))
+        if (IsRateLimited(ip))
         {
             response.StatusCode = 429;
             response.StatusDescription = $"Wait atleast {rateLimit.TotalSeconds} seconds";
