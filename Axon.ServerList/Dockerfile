@@ -22,6 +22,5 @@ COPY --from=publish /app/publish .
 EXPOSE 8080
 ENV CONFIGPATH=/data
 Env RATELIMIT=3000
-Env USEXFORWARDED=true
 VOLUME [ "/data" ]
 ENTRYPOINT ["dotnet", "Axon.ServerList.dll"]

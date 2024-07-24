@@ -17,7 +17,7 @@ public class ServerList
     private readonly HttpListener _listener = new HttpListener();
     private readonly ConcurrentDictionary<string, DateTime> _ipTracker = new ConcurrentDictionary<string, DateTime>();
     private readonly TimeSpan rateLimit = TimeSpan.FromSeconds(3);
-    private readonly bool checkXForwardedForHeader = false;
+    private readonly string[] trustedProxies = new string[0];
 
     public ServerListConfiguration Configuration { get; set; }
     public List<ServerEntry> ServerEntries { get; set; } = new();
@@ -34,10 +34,10 @@ public class ServerList
             rateLimit = TimeSpan.FromMilliseconds(limit);
         }
 
-        var checkString = Environment.GetEnvironmentVariable("USEXFORWARDED");
-        if(checkString != null && bool.TryParse(checkString,out var check))
+        var proxyString = Environment.GetEnvironmentVariable("PROXIES");
+        if(proxyString != null)
         {
-            checkXForwardedForHeader = check;
+            trustedProxies = proxyString.Split(',');
         }
 
         Start();
@@ -112,10 +112,10 @@ public class ServerList
         var response = context.Response;
         var ip = request.RemoteEndPoint.Address.ToString();
 
-        if(checkXForwardedForHeader)
+        if (trustedProxies.Contains(ip))
         {
             var xForwaredForHeader = request.Headers["X-Forwarded-For"];
-            if(xForwaredForHeader != null)
+            if (xForwaredForHeader != null)
             {
                 var adresses = xForwaredForHeader.Split(',');
                 ip = adresses[0].Trim();
