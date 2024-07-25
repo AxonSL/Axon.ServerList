@@ -117,9 +117,8 @@ public class ServerList
             var xForwaredForHeader = request.Headers["X-Forwarded-For"];
             if (xForwaredForHeader != null)
             {
-                Console.WriteLine(xForwaredForHeader);
                 var adresses = xForwaredForHeader.Split(',');
-                ip = adresses.Last().Trim();
+                ip = adresses[0].Trim();
             }
         }
 
