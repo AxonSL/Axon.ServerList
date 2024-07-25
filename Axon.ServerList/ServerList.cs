@@ -118,7 +118,7 @@ public class ServerList
             if (xForwaredForHeader != null)
             {
                 var adresses = xForwaredForHeader.Split(',');
-                ip = adresses[0].Trim();
+                ip = adresses.Last().Trim();
             }
         }
 
